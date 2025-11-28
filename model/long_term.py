@@ -146,7 +146,8 @@ class LongRec(Model):
             h_candidate = (1.0 - psi) * h_base + psi * h_freq  # [B, H]
 
             concat_hx = tf.concat([h_prev_decay, item_seq], axis=-1)  # [B, H+D]
-            alpha_m = tf.nn.softmax(tf.matmul(concat_hx, self.W_a), axis=1)  # [B, 1]
+            # alpha_m = tf.nn.softmax(tf.matmul(concat_hx, self.W_a), axis=1)  # [B, 1]
+            alpha_m = tf.nn.sigmoid(tf.matmul(concat_hx, self.W_a))
             h_att = alpha_m * h_prev_decay  # [B, H]
 
             # Final hidden state update
