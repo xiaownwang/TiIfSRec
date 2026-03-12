@@ -79,47 +79,6 @@ class DataPreprocessor:
 
         return self.preprocessed_data
 
-    def split_train_test(self):
-        users = self.preprocessed_data['user_id'].unique()
-        train_users, test_users = train_test_split(users, test_size=0.3, random_state=42)
-
-        train_data = self.preprocessed_data[self.preprocessed_data['user_id'].isin(train_users)]
-        test_data = self.preprocessed_data[self.preprocessed_data['user_id'].isin(test_users)]
-
-        # split short-term interest and long term interest
-        def split_user_data(user_data):
-            short_length = int(len(user_data) * self.sl_split)
-            short_data = user_data.iloc[-short_length:]
-            long_data = user_data.iloc[:]
-            return short_data, long_data
-
-        train_short, train_long = zip(
-            *[split_user_data(train_data[train_data['user_id'] == user_id]) for user_id in train_users])
-        test_short, test_long = zip(
-            *[split_user_data(test_data[test_data['user_id'] == user_id]) for user_id in test_users])
-
-        train_short = pd.concat(train_short)
-        train_long = pd.concat(train_long)
-        test_short = pd.concat(test_short)
-        test_long = pd.concat(test_long)
-
-        print(f"Train data: {len(train_short)} short, {len(train_long)} long")
-        print(f"Test data: {len(test_short)} short, {len(test_long)} long")
-
-        output_dir = os.path.splitext(self.file_path)[0] + "_train_test_split"
-        os.makedirs(output_dir, exist_ok=True)
-
-        train_short_file = os.path.join(output_dir, "train_short.csv")
-        train_long_file = os.path.join(output_dir, "train_long.csv")
-        test_short_file = os.path.join(output_dir, "test_short.csv")
-        test_long_file = os.path.join(output_dir, "test_long.csv")
-
-        train_short.to_csv(train_short_file, index=False)
-        train_long.to_csv(train_long_file, index=False)
-        test_short.to_csv(test_short_file, index=False)
-        test_long.to_csv(test_long_file, index=False)
-
-        return train_short, train_long, test_short, test_long
 
     def data_for_model(self, data, max_seq_len):
         user_data = data.groupby('user_id')
